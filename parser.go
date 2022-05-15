@@ -89,9 +89,6 @@ type compareOperExpr struct {
 	exprR exprNode
 }
 
-// true == true
-// var == true
-// (var == var1) == true
 func (ex *compareOperExpr) evaluate() (bool, error) {
 
 	var left, right bool
@@ -132,7 +129,6 @@ type orOperExpr struct {
 	exprR exprNode
 }
 
-// 14 || expr
 func (ex *orOperExpr) evaluate() (bool, error) {
 
 	var left, right bool
@@ -216,7 +212,7 @@ type parser struct {
 func (p *parser) peek() ParserToken {
 
 	if len(p.tstream) == 0 {
-		return ParserToken{tokenType: TokenT_END}
+		return ParserToken{tokenType: tokenT_END}
 	}
 	return p.tstream[0]
 }
@@ -224,7 +220,7 @@ func (p *parser) peek() ParserToken {
 func (p *parser) pop() ParserToken {
 
 	if len(p.tstream) == 0 {
-		return ParserToken{tokenType: TokenT_END}
+		return ParserToken{tokenType: tokenT_END}
 	}
 	var value ParserToken
 	value, p.tstream = p.tstream[0], p.tstream[1:]
@@ -232,7 +228,7 @@ func (p *parser) pop() ParserToken {
 	return value
 }
 
-func Parse(tstream []ParserToken, variables map[string]interface{}) (exprNode, error) {
+func parse(tstream []ParserToken, variables map[string]interface{}) (exprNode, error) {
 
 	p := parser{tstream: tstream, current: nil, variables: variables}
 
@@ -241,7 +237,7 @@ func Parse(tstream []ParserToken, variables map[string]interface{}) (exprNode, e
 	t := p.peek()
 	fn := parseExprN
 
-	for t.tokenType != TokenT_END {
+	for t.tokenType != tokenT_END {
 		fn, err = fn(&p)
 		if err != nil {
 			return nil, err
@@ -259,7 +255,7 @@ func parseExprN(p *parser) (parserFunc, error) {
 
 	next := p.peek()
 
-	if next.tokenType == TokenT_IDENT {
+	if next.tokenType == tokenT_IDENT {
 
 		token := p.pop()
 
@@ -272,7 +268,7 @@ func parseExprN(p *parser) (parserFunc, error) {
 		return parseExprExpr, nil
 	}
 
-	if next.tokenType == TokenT_CONS {
+	if next.tokenType == tokenT_CONS {
 
 		token := p.pop()
 		p.current = &boolValueExpr{val: token.value == "true"}
@@ -280,7 +276,7 @@ func parseExprN(p *parser) (parserFunc, error) {
 		return parseExprExpr, nil
 	}
 
-	if next.tokenType == TokenT_NUMBER {
+	if next.tokenType == tokenT_NUMBER {
 		token := p.pop()
 		val, err := strconv.Atoi(token.value)
 		if err != nil {
@@ -290,7 +286,7 @@ func parseExprN(p *parser) (parserFunc, error) {
 		return parseExprExpr, nil
 	}
 
-	if next.tokenType == TokenT_STRVAL {
+	if next.tokenType == tokenT_STRVAL {
 		token := p.pop()
 
 		p.current = createValueExprNode(token.value)
@@ -298,7 +294,7 @@ func parseExprN(p *parser) (parserFunc, error) {
 
 	}
 
-	if next.tokenType == TokenT_LOPER {
+	if next.tokenType == tokenT_LOPER {
 
 		expr, err := branchLOperatorExpr(p)
 		if err != nil {
@@ -309,7 +305,7 @@ func parseExprN(p *parser) (parserFunc, error) {
 		return parseExprExpr, nil
 	}
 
-	if next.tokenType == TokenT_LPAR {
+	if next.tokenType == tokenT_LPAR {
 
 		expr, err := branchExpr(p)
 		if err != nil {
@@ -327,7 +323,7 @@ func parseExprExpr(p *parser) (parserFunc, error) {
 
 	next := p.peek()
 
-	if next.tokenType == TokenT_OPER {
+	if next.tokenType == tokenT_OPER {
 		return parseOperatorExpr, nil
 	}
 
@@ -338,7 +334,7 @@ func branchLOperatorExpr(p *parser) (exprNode, error) {
 	p.pop()
 	next := p.peek()
 
-	if next.tokenType == TokenT_IDENT {
+	if next.tokenType == tokenT_IDENT {
 
 		p.pop()
 
@@ -348,7 +344,7 @@ func branchLOperatorExpr(p *parser) (exprNode, error) {
 		return nil, newParserError(fmt.Sprintf("undefined variable:%s", next.value))
 	}
 
-	if next.tokenType == TokenT_LPAR {
+	if next.tokenType == tokenT_LPAR {
 		return branchExpr(p)
 	}
 
@@ -364,10 +360,10 @@ func branchExpr(p *parser) (exprNode, error) {
 
 	for depth != 0 {
 		token := p.pop()
-		if token.tokenType == TokenT_LPAR {
+		if token.tokenType == tokenT_LPAR {
 			depth++
 		}
-		if token.tokenType == TokenT_RPAR {
+		if token.tokenType == tokenT_RPAR {
 			depth--
 		}
 
@@ -377,7 +373,7 @@ func branchExpr(p *parser) (exprNode, error) {
 
 	}
 
-	return Parse(tsream, p.variables)
+	return parse(tsream, p.variables)
 }
 
 func parseOperatorExpr(p *parser) (parserFunc, error) {
@@ -385,7 +381,7 @@ func parseOperatorExpr(p *parser) (parserFunc, error) {
 	token := p.pop()
 	next := p.peek()
 
-	if next.tokenType == TokenT_IDENT {
+	if next.tokenType == tokenT_IDENT {
 		var right exprNode
 
 		if v, ok := p.variables[next.value]; ok {
@@ -400,7 +396,7 @@ func parseOperatorExpr(p *parser) (parserFunc, error) {
 		return parseExprExpr, nil
 	}
 
-	if next.tokenType == TokenT_CONS {
+	if next.tokenType == tokenT_CONS {
 		right := &boolValueExpr{val: next.value == "true"}
 
 		p.current = produce(p.current, right, token)
@@ -410,8 +406,8 @@ func parseOperatorExpr(p *parser) (parserFunc, error) {
 
 	}
 
-	if next.tokenType == TokenT_STRVAL {
-		//right := &stringValueExpr{val: strings.Trim(next.value, "'")}
+	if next.tokenType == tokenT_STRVAL {
+
 		right := createValueExprNode(next.value)
 		p.current = produce(p.current, right, token)
 
@@ -420,7 +416,7 @@ func parseOperatorExpr(p *parser) (parserFunc, error) {
 
 	}
 
-	if next.tokenType == TokenT_NUMBER {
+	if next.tokenType == tokenT_NUMBER {
 
 		val, err := strconv.Atoi(next.value)
 		if err != nil {
@@ -436,7 +432,7 @@ func parseOperatorExpr(p *parser) (parserFunc, error) {
 
 	}
 
-	if next.tokenType == TokenT_LOPER {
+	if next.tokenType == tokenT_LOPER {
 
 		if right, err := branchLOperatorExpr(p); err == nil {
 			p.current = produce(p.current, right, token)
@@ -447,7 +443,7 @@ func parseOperatorExpr(p *parser) (parserFunc, error) {
 		}
 	}
 
-	if next.tokenType == TokenT_LPAR {
+	if next.tokenType == tokenT_LPAR {
 
 		if right, err := branchExpr(p); err == nil {
 			p.current = produce(p.current, right, token)
@@ -463,16 +459,16 @@ func parseOperatorExpr(p *parser) (parserFunc, error) {
 func produce(left, right exprNode, token ParserToken) exprNode {
 
 	var current exprNode
-	if token.value == string(Token_AND) {
+	if token.value == string(token_AND) {
 		current = &andOperExpr{exprL: left, exprR: right}
 	}
-	if token.value == string(Token_OR) {
+	if token.value == string(token_OR) {
 		current = &orOperExpr{exprL: left, exprR: right}
 	}
-	if token.value == string(Token_CMP) {
+	if token.value == string(token_CMP) {
 		current = &compareOperExpr{exprL: left, exprR: right}
 	}
-	if token.value == string(Token_NOT) {
+	if token.value == string(token_NOT) {
 		current = &notOperExpr{exprL: left, exprR: right}
 	}
 	return current
@@ -503,14 +499,18 @@ func Eval(input string, variables map[string]interface{}) (bool, error) {
 
 	var err error
 	var tstream []ParserToken
-	if tstream, err = Tokenize(input); err != nil {
+	if tstream, err = tokenize(input); err != nil {
 		return false, err
 	}
 	var ex exprNode
-	ex, err = Parse(tstream, variables)
+	ex, err = parse(tstream, variables)
 	if err != nil {
 		return false, err
 	}
 
 	return ex.evaluate()
+}
+
+func Test(input string) (bool, error) {
+	return true, nil
 }

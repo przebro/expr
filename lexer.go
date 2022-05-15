@@ -10,30 +10,30 @@ import (
 type TokenValue string
 
 const (
-	Token_AND       TokenValue = "&&"
-	Token_OR        TokenValue = "||"
-	Token_NOT       TokenValue = "!="
-	Token_NEG       TokenValue = "!"
-	Token_CMP       TokenValue = "=="
-	Token_BRACKET_R TokenValue = ")"
-	Token_BRACKET_L TokenValue = "("
-	Token_TRUE      TokenValue = "true"
-	Token_FALSE     TokenValue = "false"
-	Token_EMPTY     TokenValue = ""
+	token_AND       TokenValue = "&&"
+	token_OR        TokenValue = "||"
+	token_NOT       TokenValue = "!="
+	token_NEG       TokenValue = "!"
+	token_CMP       TokenValue = "=="
+	token_BRACKET_R TokenValue = ")"
+	token_BRACKET_L TokenValue = "("
+	token_TRUE      TokenValue = "true"
+	token_FALSE     TokenValue = "false"
+	token_EMPTY     TokenValue = ""
 )
 
 type TokenType int
 
 const (
-	TokenT_END    TokenType = 0
-	TokenT_OPER   TokenType = 1
-	TokenT_CONS   TokenType = 3
-	TokenT_NUMBER TokenType = 4
-	TokenT_STRVAL TokenType = 5
-	TokenT_IDENT  TokenType = 6
-	TokenT_LPAR   TokenType = 7
-	TokenT_RPAR   TokenType = 8
-	TokenT_LOPER  TokenType = 9
+	tokenT_END    TokenType = 0
+	tokenT_OPER   TokenType = 1
+	tokenT_CONS   TokenType = 3
+	tokenT_NUMBER TokenType = 4
+	tokenT_STRVAL TokenType = 5
+	tokenT_IDENT  TokenType = 6
+	tokenT_LPAR   TokenType = 7
+	tokenT_RPAR   TokenType = 8
+	tokenT_LOPER  TokenType = 9
 )
 
 type ParserToken struct {
@@ -56,7 +56,7 @@ type lexerState struct {
 
 type lexerFunc func(lexer *lexerState) lexerFunc
 
-func Tokenize(expr string) ([]ParserToken, error) {
+func tokenize(expr string) ([]ParserToken, error) {
 
 	if len(expr) == 0 {
 		return nil, errors.New("empty stream")
@@ -150,43 +150,43 @@ func (lex *lexerState) classify() (TokenType, error) {
 	strLiteral := regexp.MustCompile(`^\'[^\t\n\'\r]*'$`)
 
 	switch true {
-	case lex.buffer == string(Token_BRACKET_L):
+	case lex.buffer == string(token_BRACKET_L):
 		{
-			return TokenT_LPAR, nil
+			return tokenT_LPAR, nil
 		}
-	case lex.buffer == string(Token_BRACKET_R):
+	case lex.buffer == string(token_BRACKET_R):
 		{
-			return TokenT_RPAR, nil
+			return tokenT_RPAR, nil
 		}
-	case lex.buffer == string(Token_CMP):
+	case lex.buffer == string(token_CMP):
 		fallthrough
-	case lex.buffer == string(Token_NOT):
+	case lex.buffer == string(token_NOT):
 		fallthrough
-	case lex.buffer == string(Token_OR):
+	case lex.buffer == string(token_OR):
 		fallthrough
-	case lex.buffer == string(Token_AND):
+	case lex.buffer == string(token_AND):
 		{
-			return TokenT_OPER, nil
+			return tokenT_OPER, nil
 		}
-	case lex.buffer == string(Token_NEG):
+	case lex.buffer == string(token_NEG):
 		{
-			return TokenT_LOPER, nil
+			return tokenT_LOPER, nil
 		}
 	case lex.buffer == "true" || lex.buffer == "false":
 		{
-			return TokenT_CONS, nil
+			return tokenT_CONS, nil
 		}
 	case rLiteral.Match([]byte(lex.buffer)):
 		{
-			return TokenT_IDENT, nil
+			return tokenT_IDENT, nil
 		}
 	case nLiteral.Match([]byte(lex.buffer)):
 		{
-			return TokenT_NUMBER, nil
+			return tokenT_NUMBER, nil
 		}
 	case strLiteral.Match([]byte(lex.buffer)):
 		{
-			return TokenT_STRVAL, nil
+			return tokenT_STRVAL, nil
 		}
 	}
 
@@ -285,7 +285,7 @@ func lexOper(state *lexerState) lexerFunc {
 		if t, err := state.classify(); err == nil {
 			state.produce(t)
 			state.buffer = ""
-			if t == TokenT_LOPER && unicode.IsSpace(state.next) {
+			if t == tokenT_LOPER && unicode.IsSpace(state.next) {
 				state.err = newLexerError(fmt.Sprintf("unexpected char:%c,line:%d,position:%d", state.next, state.line, state.pos))
 				return nil
 			}

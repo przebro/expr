@@ -25,7 +25,7 @@ func TestLexer_Tokenize(t *testing.T) {
 
 	for n, input := range in {
 
-		_, err := Tokenize(input)
+		_, err := tokenize(input)
 		if err != nil {
 			t.Error("unexepected result, in:", n)
 		}
@@ -42,7 +42,7 @@ func TestLexer_Tokenize_Data(t *testing.T) {
 
 	for n, input := range in {
 
-		result, err := Tokenize(input)
+		result, err := tokenize(input)
 		if err != nil {
 			t.Error("unexepected result, in:", n)
 		}
@@ -69,7 +69,7 @@ func TestLexer_Tokenize_errors(t *testing.T) {
 
 	for n, input := range in {
 
-		_, err := Tokenize(input)
+		_, err := tokenize(input)
 		if err == nil {
 			t.Error("unexepected result, in:", n)
 		}
