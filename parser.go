@@ -511,6 +511,6 @@ func Eval(input string, variables map[string]interface{}) (bool, error) {
 	return ex.evaluate()
 }
 
-func Test(input string) (bool, error) {
-	return true, nil
+func Test(input string) error {
+	return nil
 }
