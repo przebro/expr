@@ -56,6 +56,51 @@ type lexerState struct {
 
 type lexerFunc func(lexer *lexerState) lexerFunc
 
+func Translate(expr string) (string, []string, error) {
+	tokens, err := tokenize(expr)
+	if err != nil {
+		return "", []string{}, err
+	}
+
+	result := ""
+	variables := []string{}
+
+	for n, t := range tokens {
+		spc := " "
+		if t.tokenType == tokenT_IDENT {
+			if t.value == "label_04.DATE" {
+				fmt.Println("")
+			}
+			variables = append(variables, t.value)
+
+			if n > 0 && n < len(tokens) {
+				if tokens[n-1].tokenType == tokenT_LOPER {
+					spc = " "
+				} else if n+1 < len(tokens) {
+					if tokens[n+1].value != "==" {
+
+						result = result + t.value + " == "
+						t = ParserToken{tokenT_CONS, "true", 4, t.line, t.pos}
+						spc = " "
+					}
+				} else {
+					result = result + t.value + " == "
+					t = ParserToken{tokenT_CONS, "true", 4, t.line, t.pos}
+					spc = " "
+				}
+
+			}
+		}
+		if tokens[n].tokenType == tokenT_LOPER {
+			spc = ""
+		}
+
+		result = result + t.value + spc
+	}
+
+	return result, variables, nil
+}
+
 func tokenize(expr string) ([]ParserToken, error) {
 
 	if len(expr) == 0 {
@@ -145,7 +190,7 @@ func (lex *lexerState) move() {
 }
 func (lex *lexerState) classify() (TokenType, error) {
 
-	rLiteral := regexp.MustCompile(`^[A-Za-z][\w\d_]*$`)
+	rLiteral := regexp.MustCompile(`^[A-Za-z][\w\d_\.]*$`)
 	nLiteral := regexp.MustCompile(`^\-?\d+$`)
 	strLiteral := regexp.MustCompile(`^\'[^\t\n\'\r]*'$`)
 
@@ -217,7 +262,7 @@ func lexIdent(state *lexerState) lexerFunc {
 	state.buffer = state.buffer + string(state.next)
 	state.move()
 
-	if (unicode.IsDigit(state.next) && len(state.buffer) != 0) || unicode.IsLetter(state.next) || state.next == '_' {
+	if (unicode.IsDigit(state.next) && len(state.buffer) != 0) || unicode.IsLetter(state.next) || state.next == '_' || state.next == '.' {
 		return lexIdent
 	} else {
 		if t, err := state.classify(); err == nil {

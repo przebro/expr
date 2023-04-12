@@ -207,3 +207,11 @@ func TestEvaluateString_Negative(t *testing.T) {
 		}
 	}
 }
+func TestTT(t *testing.T) {
+
+	r, err := Eval("!label_01 && !label_02", map[string]interface{}{
+		"label_01": false,
+		"label_02": false,
+	})
+	fmt.Println(r, err)
+}
