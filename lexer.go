@@ -73,8 +73,8 @@ func Translate(expr string) (string, []string, error) {
 			}
 			variables = append(variables, t.value)
 
-			if n > 0 && n < len(tokens) {
-				if tokens[n-1].tokenType == tokenT_LOPER {
+			if n < len(tokens) {
+				if n-1 >= 0 && tokens[n-1].tokenType == tokenT_LOPER {
 					spc = " "
 				} else if n+1 < len(tokens) {
 					if tokens[n+1].value != "==" {
@@ -190,7 +190,7 @@ func (lex *lexerState) move() {
 }
 func (lex *lexerState) classify() (TokenType, error) {
 
-	rLiteral := regexp.MustCompile(`^[A-Za-z][\w\d_\.]*$`)
+	rLiteral := regexp.MustCompile(`^[A-Za-z][\w\d_\.\-]*$`)
 	nLiteral := regexp.MustCompile(`^\-?\d+$`)
 	strLiteral := regexp.MustCompile(`^\'[^\t\n\'\r]*'$`)
 
@@ -262,7 +262,7 @@ func lexIdent(state *lexerState) lexerFunc {
 	state.buffer = state.buffer + string(state.next)
 	state.move()
 
-	if (unicode.IsDigit(state.next) && len(state.buffer) != 0) || unicode.IsLetter(state.next) || state.next == '_' || state.next == '.' {
+	if (unicode.IsDigit(state.next) && len(state.buffer) != 0) || unicode.IsLetter(state.next) || state.next == '_' || state.next == '-' || state.next == '.' {
 		return lexIdent
 	} else {
 		if t, err := state.classify(); err == nil {
