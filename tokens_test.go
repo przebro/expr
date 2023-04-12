@@ -62,10 +62,23 @@ func TestLexer_TA(t *testing.T) {
 	}
 
 }
+
+func TestLexer_TB(t *testing.T) {
+	input := "label-01.PREV ||  !(LABEL-02 && LABEL-03.NEXT)"
+	z := false
+	x := true
+	y := true
+	fmt.Println(z || !(x && y))
+	result, err := Eval(input, map[string]interface{}{"label-01.PREV": false, "LABEL-02": true, "LABEL-03.NEXT": true})
+
+	fmt.Println("result:", result, "err:", err)
+
+}
+
 func TestLexer_Tokenize_Data(t *testing.T) {
 
 	in := []string{
-		"label_01.PREV||  LABEL_02",
+		"label_01.PREV ||  LABEL_02",
 		"label_01.PREV == true || !label_02 && !(label_03.NEXT || label_04.DATE)",
 		"label_01.PREV || !label_02 && (label_03.NEXT || label_04)",
 		"label_05  == 'string value' && some_int == 4321",

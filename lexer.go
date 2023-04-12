@@ -56,6 +56,22 @@ type lexerState struct {
 
 type lexerFunc func(lexer *lexerState) lexerFunc
 
+func Extract(expr string) ([]string, error) {
+	tokens, err := tokenize(expr)
+	variables := []string{}
+
+	if err != nil {
+		return []string{}, err
+	}
+	for _, t := range tokens {
+		if t.tokenType == tokenT_IDENT {
+			variables = append(variables, t.value)
+		}
+	}
+
+	return variables, nil
+}
+
 func Translate(expr string) (string, []string, error) {
 	tokens, err := tokenize(expr)
 	if err != nil {

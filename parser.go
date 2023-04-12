@@ -345,7 +345,8 @@ func branchLOperatorExpr(p *parser) (exprNode, error) {
 	}
 
 	if next.tokenType == tokenT_LPAR {
-		return branchExpr(p)
+		expr, err := branchExpr(p)
+		return &negValueExpr{expR: expr}, err
 	}
 
 	return nil, newParserError(fmt.Sprintf("unexpected token:%s,line:%d,pos:%d", next.value, next.line, next.pos))
